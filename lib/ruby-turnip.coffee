@@ -52,6 +52,8 @@ module.exports = RubyTurnip =
       for i, value of match.matches
         scopeList.push({path: match.filePath, name: value.matchText, lineNo: value.range[0][0]})
 
-    promise.then =>
+    # Todo: search steps
+    
+    Promise.all([promise]).then =>
       for i, value of scopeList
         console.log value
