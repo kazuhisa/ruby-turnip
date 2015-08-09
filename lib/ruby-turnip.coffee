@@ -15,6 +15,7 @@ module.exports = RubyTurnip =
 
     # Register command that toggles this view
     @subscriptions.add atom.commands.add 'atom-workspace', 'ruby-turnip:toggle': => @toggle()
+    @subscriptions.add atom.commands.add 'atom-workspace', 'ruby-turnip:jump-to-step': => @jumpToStep()
 
   deactivate: ->
     @modalPanel.destroy()
@@ -31,3 +32,26 @@ module.exports = RubyTurnip =
       @modalPanel.hide()
     else
       @modalPanel.show()
+
+  onFulfilled: (data) ->
+    console.log(data.valueOf())
+
+  promiseDone: (done) ->
+    console.log(done, 'done')
+
+  promiseCancel: (cancel) ->
+    console.log(cancel, 'cancel')
+
+  jumpToStep: ->
+    console.log 'jumpToStep!'
+    stepRegexp = /step\s+(.+)\s+do/
+    scopeRegexp = /steps_for\s+(.+)\s+do/
+    options = {paths: ["spec/steps/**/*.rb"]}
+    scopeList = []
+    promise = atom.workspace.scan scopeRegexp, options, (match) ->
+      for i, value of match.matches
+        scopeList.push({path: match.filePath, name: value.matchText, lineNo: value.range[0][0]})
+
+    promise.then =>
+      for i, value of scopeList
+        console.log value

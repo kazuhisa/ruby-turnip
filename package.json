@@ -6,7 +6,7 @@
   "keywords": [
   ],
   "activationCommands": {
-    "atom-workspace": "ruby-turnip:toggle"
+    "atom-workspace": "ruby-turnip:jump-to-step"
   },
   "repository": "https://github.com/atom/ruby-turnip",
   "license": "MIT",
