@@ -42,49 +42,54 @@ module.exports = RubyTurnip =
   promiseCancel: (cancel) ->
     console.log(cancel, 'cancel')
 
-  jumpToStep: ->
-    console.log 'jumpToStep!'
-    stepRegexp = /step\s+(.+)\s+do/
-    scopeRegexp = /steps_for\s+(.+)\s+do/
-    options = {paths: ["spec/steps/**/*.rb"]}
-
-    # 現在行を取得
+  # Get target strings
+  getTarget: ->
     row = atom.workspace.getActiveTextEditor().getCursorBufferPosition().row
     currentLine = atom.workspace.getActiveTextEditor().lineTextForBufferRow(row)
+    currentLine.match(/(\S+)(\s+)(.+)/)[3]
 
-    # 対象文字列を取得
-    target = currentLine.match(/(\S+)(\s+)(.+)/)[3]
-
-    # タグを取得
+  # Get current page tags (ex. @user @company)
+  getTags: ->
     tags = []
     atom.workspace.getActiveTextEditor().scan /(@\S+)/g, ({matchText}) =>
       tags.unshift(matchText.replace(/^@/, ""))
-    console.log(tags)
+    tags.push("")
+    tags
 
-    # スコープのリストを作成
+  jumpToStep: ->
+    stepRegexp = /step\s+(.+)\s+do/
+    scopeRegexp = /steps_for\s+(.+)\s+do/
+    options = {paths: ["spec/steps/**/*.rb"]}
+    target = @getTarget()
+    tags = @getTags()
+
+    # Create Scope list
     scopeList = []
     promiseScope = atom.workspace.scan scopeRegexp, options, (match) ->
       for i, value of match.matches
         name = value.matchText.match(/steps_for\s+(.+)\s+do/)[1]
         scopeList.push({path: match.filePath, name: name.replace(/:/,""), lineNo: value.range[0][0]})
 
-    # ステップのリストを作成
+    # Create Step list
     stepList = []
     promiseStep = atom.workspace.scan stepRegexp, options, (match) ->
       for i, value of match.matches
         step = value.matchText.match(/step\s+(.+)\s+do/)[1]
         step = step.replace(/^'/g,'').replace(/^"/g,'').replace(/'$/g,'').replace(/"$/g,'')
-        step = step.replace(/:.+?\s/g,".+\s")
-        stepList.push({path: match.filePath, name: step, lineNo: value.range[0][0], scope: ""})
+        step = step.replace(/:\S+?\s+?/g,"\\s*\\S+?\\s+")
+        step = ///^#{step}$///
+        stepList.push({path: match.filePath, step: step, lineNo: value.range[0][0], scope: ""})
 
-    # 2つのリスト作成を待つ
+    # Wait for Promise completed
     Promise.all([promiseScope, promiseStep]).then =>
-      # スコープの設定を行う
-      # TODO: scopeListで回して、行番号以降を同じステップで塗り替える
+      # Set Scope for stepList
       for i, scope of scopeList
         results = (step for step in stepList when step.path is scope.path && step.lineNo > scope.lineNo)
         for j, result of results
           result.scope = scope.name
 
-      for i, step of stepList
-        console.log step
+      for tag in tags
+        for step in stepList
+          if step.scope is tag && target.match(step.step)
+            atom.workspace.open(step.path,{initialLine: step.lineNo}).done
+            return
