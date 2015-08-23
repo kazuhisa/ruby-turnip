@@ -2,8 +2,8 @@
 'context-menu':
   'atom-text-editor': [
     {
-      'label': 'Toggle ruby-turnip'
-      'command': 'ruby-turnip:toggle'
+      'label': 'Jump to turnip step'
+      'command': 'ruby-turnip:jump-to-step'
     }
   ]
 'menu': [
@@ -13,8 +13,8 @@
       'label': 'ruby-turnip'
       'submenu': [
         {
-          'label': 'Toggle'
-          'command': 'ruby-turnip:toggle'
+          'label': 'Jump to turnip step'
+          'command': 'ruby-turnip:jump-to-step'
         }
       ]
     ]
