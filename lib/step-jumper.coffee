@@ -1,25 +1,13 @@
 module.exports =
   class StepJumper
-    # Get target strings
-    getTarget: ->
-      row = atom.workspace.getActiveTextEditor().getCursorBufferPosition().row
-      currentLine = atom.workspace.getActiveTextEditor().lineTextForBufferRow(row)
-      currentLine.match(/(\S+)(\s+)(.+)/)[3]
-
-    # Get current page tags (ex. @user @company)
-    getTags: ->
-      tags = []
-      atom.workspace.getActiveTextEditor().scan /(@\S+)/g, ({matchText}) =>
-        tags.unshift(matchText.replace(/^@/, ""))
-      tags.push("")
-      tags
+    constructor: (target, tags) ->
+      @target = target
+      @tags = tags
 
     jumpToStep: ->
       stepRegexp = /step\s+(.+)\s+do/
       scopeRegexp = /steps_for\s+(.+)\s+do/
       options = {paths: ["spec/steps/**/*.rb"]}
-      target = @getTarget()
-      tags = @getTags()
 
       # Create Scope list
       scopeList = []
@@ -46,9 +34,9 @@ module.exports =
           for j, result of results
             result.scope = scope.name
 
-        for tag in tags
+        for tag in @tags
           for step in stepList
-            if step.scope is tag && target.match(step.step)
+            if step.scope is tag && @target.match(step.step)
               result = {path: step.path, lineNo: step.lineNo}
               return Promise.resolve(result)
         return Promise.resolve(null)

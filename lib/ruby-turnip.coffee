@@ -43,8 +43,22 @@ module.exports = RubyTurnip =
   promiseCancel: (cancel) ->
     console.log(cancel, 'cancel')
 
+  # Get target strings
+  getTarget: ->
+    row = atom.workspace.getActiveTextEditor().getCursorBufferPosition().row
+    currentLine = atom.workspace.getActiveTextEditor().lineTextForBufferRow(row)
+    currentLine.match(/(\S+)(\s+)(.+)/)[3]
+
+  # Get current page tags (ex. @user @company)
+  getTags: ->
+    tags = []
+    atom.workspace.getActiveTextEditor().scan /(@\S+)/g, ({matchText}) =>
+      tags.unshift(matchText.replace(/^@/, ""))
+    tags.push("")
+    tags
+
   jumpToStep: ->
-    stepJumper = new StepJumper
+    stepJumper = new StepJumper(@getTarget(), @getTags())
     result = stepJumper.jumpToStep()
     result.then (data) =>
       if data
