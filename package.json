@@ -1,14 +1,14 @@
 {
   "name": "ruby-turnip",
   "main": "./lib/ruby-turnip",
-  "version": "0.0.0",
-  "description": "A short description of your package",
+  "version": "1.0.0",
+  "description": "Jump to step from turnip feature file.",
   "keywords": [
   ],
   "activationCommands": {
     "atom-workspace": "ruby-turnip:jump-to-step"
   },
-  "repository": "https://github.com/atom/ruby-turnip",
+  "repository": "https://github.com/kazuhisa/ruby-turnip",
   "license": "MIT",
   "engines": {
     "atom": ">=1.0.0 <2.0.0"
